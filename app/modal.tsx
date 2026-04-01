@@ -1,16 +1,25 @@
-import { Link } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { Platform, StyleSheet, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 
-import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { TaskForm } from '@/components/TaskForm';
+import { RoutineForm } from '@/components/RoutineForm';
 
 export default function ModalScreen() {
+  const { type, id } = useLocalSearchParams<{ type: 'task' | 'routine'; id?: string }>();
+  const isEdit = !!id;
+
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">This is a modal</ThemedText>
-      <Link href="/" dismissTo style={styles.link}>
-        <ThemedText type="link">Go to home screen</ThemedText>
-      </Link>
+      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
+      <View style={styles.content}>
+        {type === 'task' ? (
+          <TaskForm taskId={id} isEdit={isEdit} />
+        ) : (
+          <RoutineForm routineId={id} isEdit={isEdit} />
+        )}
+      </View>
     </ThemedView>
   );
 }
@@ -18,12 +27,10 @@ export default function ModalScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
   },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
+  content: {
+    flex: 1,
+    padding: 20,
   },
 });
