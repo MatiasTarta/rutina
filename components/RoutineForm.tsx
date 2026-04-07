@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput, Pressable, ScrollView, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
-import { useRoutinesStore } from '@/stores/routinesStore';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors, getContrastColor } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useRoutinesStore } from '@/stores/routinesStore';
 import { Routine } from '@/types';
+import { ThemedText } from './themed-text';
 
 const colorOptions = [
   '#ef4444', '#f97316', '#f59e0b', '#84cc16',
@@ -303,7 +302,7 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -337,7 +336,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButtonText: {
-    color: '#fff',
+    color: '#000000',
     fontSize: 16,
     fontWeight: '600',
   },

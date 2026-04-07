@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
-import { StyleSheet, View, TextInput, Pressable, ScrollView, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { ThemedText } from './themed-text';
-import { ThemedView } from './themed-view';
-import { useTasksStore } from '@/stores/tasksStore';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTasksStore } from '@/stores/tasksStore';
 import { Task, priorityColors } from '@/types';
+import { ThemedText } from './themed-text';
 
 interface TaskFormProps {
   taskId?: string;
@@ -240,7 +239,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   saveButtonText: {
-    color: '#fff',
+    color: '#000000',
     fontSize: 16,
     fontWeight: '600',
   },

@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { StyleSheet, View, Pressable, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { ThemedText } from './themed-text';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { ThemedText } from './themed-text';
 
 interface FloatingActionButtonProps {
   onAddTask?: () => void;
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
   },
   mainIcon: {
     fontSize: 28,
-    color: '#fff',
+    color: '#000000',
     fontWeight: '300',
   },
   menuItem: {
