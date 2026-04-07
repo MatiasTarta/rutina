@@ -9,7 +9,7 @@ import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { SwipeableView } from '@/components/SwipeableView';
 import { useTasksStore } from '@/stores/tasksStore';
 import { useRoutinesStore } from '@/stores/routinesStore';
-import { Colors } from '@/constants/theme';
+import { Colors, getContrastColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { formatDate } from '@/utils/helpers';
 
@@ -105,14 +105,14 @@ export default function TodayScreen() {
             <Pressable
               style={[styles.quickAction, { backgroundColor: colors.success }]}
               onPress={handleAddTask}>
-              <Text style={styles.quickActionIcon}>+</Text>
-              <ThemedText style={styles.quickActionText}>Task</ThemedText>
+              <Text style={[styles.quickActionIcon, { color: getContrastColor(colors.success) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>+</Text>
+              <ThemedText style={[styles.quickActionText, { color: getContrastColor(colors.success) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>Task</ThemedText>
             </Pressable>
             <Pressable
               style={[styles.quickAction, { backgroundColor: colors.secondary }]}
               onPress={handleAddRoutine}>
-              <Text style={styles.quickActionIcon}>+</Text>
-              <ThemedText style={styles.quickActionText}>Routine</ThemedText>
+              <Text style={[styles.quickActionIcon, { color: getContrastColor(colors.secondary) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>+</Text>
+              <ThemedText style={[styles.quickActionText, { color: getContrastColor(colors.secondary) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>Routine</ThemedText>
             </Pressable>
           </View>
 
@@ -147,9 +147,15 @@ export default function TodayScreen() {
                       <ThemedText style={{ color: colors.icon, fontSize: 12 }}>{task.dueTime}</ThemedText>
                     )}
                   </View>
-                  <View style={[styles.priorityBadge, { backgroundColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`] }]}>
-                    <Text style={styles.priorityText}>{task.priority.charAt(0)}</Text>
-                  </View>
+                  {(() => {
+                    const priorityColor = colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`];
+                    const textColor = getContrastColor(priorityColor) === 'dark' ? colors.buttonTextDark : colors.buttonText;
+                    return (
+                      <View style={[styles.priorityBadge, { backgroundColor: priorityColor }]}>
+                        <Text style={[styles.priorityText, { color: textColor }]}>{task.priority.charAt(0)}</Text>
+                      </View>
+                    );
+                  })()}
                 </Pressable>
               ))
             )}
@@ -235,11 +241,9 @@ const styles = StyleSheet.create({
   },
   quickActionIcon: {
     fontSize: 18,
-    color: '#fff',
     fontWeight: '300',
   },
   quickActionText: {
-    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
   },
@@ -303,7 +307,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   priorityText: {
-    color: 'white',
     fontSize: 10,
     fontWeight: '700',
   },

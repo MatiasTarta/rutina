@@ -8,6 +8,20 @@ import { Platform } from 'react-native';
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
+/**
+ * Determines if a color is "light" or "dark" based on its hex value.
+ * Used to decide whether to use light or dark text on top of it.
+ */
+export function getContrastColor(hexColor: string): 'light' | 'dark' {
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  // Calculate relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? 'dark' : 'light';
+}
+
 export const Colors = {
   light: {
     text: '#11181C',
@@ -32,6 +46,8 @@ export const Colors = {
     statusCompleted: '#22c55e',
     statusCancelled: '#ef4444',
     streakGold: '#fbbf24',
+    buttonText: '#fff',
+    buttonTextDark: '#11181C',
   },
   dark: {
     text: '#ECEDEE',
@@ -56,6 +72,8 @@ export const Colors = {
     statusCompleted: '#4ade80',
     statusCancelled: '#f87171',
     streakGold: '#fbbf24',
+    buttonText: '#fff',
+    buttonTextDark: '#151718',
   },
 };
 

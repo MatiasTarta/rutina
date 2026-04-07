@@ -7,7 +7,7 @@ import { ThemedView } from '@/components/themed-view';
 import { SwipeableView } from '@/components/SwipeableView';
 import { useTasksStore } from '@/stores/tasksStore';
 import { useRoutinesStore } from '@/stores/routinesStore';
-import { Colors } from '@/constants/theme';
+import { Colors, getContrastColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { formatDate, addDays, isToday } from '@/utils/helpers';
 
@@ -130,7 +130,7 @@ export default function CalendarScreen() {
               ]}
               onPress={() => setSelectedDate(day)}>
               <View style={[styles.dayNumberContainer, isTodayDate && { backgroundColor: colors.tint }]}>
-                <Text style={[styles.dayNumber, isTodayDate && { color: colors.background }]}>
+                <Text style={[styles.dayNumber, { color: isTodayDate ? colors.background : colors.text }]}>
                   {day.getDate()}
                 </Text>
               </View>
@@ -191,7 +191,9 @@ export default function CalendarScreen() {
                     styles.priorityBadge,
                     { backgroundColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`] },
                   ]}>
-                  <Text style={styles.priorityText}>{task.priority}</Text>
+                  <Text style={[styles.priorityText, { color: getContrastColor(colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
+                    {task.priority}
+                  </Text>
                 </View>
               </View>
             ))
@@ -289,7 +291,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   priorityText: {
-    color: 'white',
     fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',

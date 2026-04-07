@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SwipeableView } from '@/components/SwipeableView';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { SwipeableView } from '@/components/SwipeableView';
-import { useRoutinesStore } from '@/stores/routinesStore';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useRoutinesStore } from '@/stores/routinesStore';
 
 export default function HabitsScreen() {
   const colorScheme = useColorScheme();
@@ -97,43 +97,44 @@ export default function HabitsScreen() {
             </ThemedText>
           </View>
 
-        {routines.length === 0 ? (
-          <ThemedView style={styles.emptyState}>
-            <ThemedText type="subtitle" style={{ textAlign: 'center', marginBottom: 8 }}>
-              No habits yet
-            </ThemedText>
-            <ThemedText style={{ color: colors.icon, textAlign: 'center' }}>
-              Add your first habit to start tracking your progress
-            </ThemedText>
-          </ThemedView>
-        ) : (
-          <>
-            {dailyRoutines.length > 0 && (
-              <View style={styles.section}>
-                <ThemedText type="subtitle">Daily</ThemedText>
-                {dailyRoutines.map(renderRoutineCard)}
-              </View>
-            )}
+          {routines.length === 0 ? (
+            <ThemedView style={styles.emptyState}>
+              <ThemedText type="subtitle" style={{ textAlign: 'center', marginBottom: 8 }}>
+                No habits yet
+              </ThemedText>
+              <ThemedText style={{ color: colors.icon, textAlign: 'center' }}>
+                Add your first habit to start tracking your progress
+              </ThemedText>
+            </ThemedView>
+          ) : (
+            <>
+              {dailyRoutines.length > 0 && (
+                <View style={styles.section}>
+                  <ThemedText type="subtitle">Daily</ThemedText>
+                  {dailyRoutines.map(renderRoutineCard)}
+                </View>
+              )}
 
-            {weeklyRoutines.length > 0 && (
-              <View style={styles.section}>
-                <ThemedText type="subtitle">Weekly</ThemedText>
-                {weeklyRoutines.map(renderRoutineCard)}
-              </View>
-            )}
+              {weeklyRoutines.length > 0 && (
+                <View style={styles.section}>
+                  <ThemedText type="subtitle">Weekly</ThemedText>
+                  {weeklyRoutines.map(renderRoutineCard)}
+                </View>
+              )}
 
-            {activeRoutines.filter((r) => r.frequency === 'custom').length > 0 && (
-              <View style={styles.section}>
-                <ThemedText type="subtitle">Custom</ThemedText>
-                {activeRoutines
-                  .filter((r) => r.frequency === 'custom')
-                  .map(renderRoutineCard)}
-              </View>
-            )}
-          </>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+              {activeRoutines.filter((r) => r.frequency === 'custom').length > 0 && (
+                <View style={styles.section}>
+                  <ThemedText type="subtitle">Custom</ThemedText>
+                  {activeRoutines
+                    .filter((r) => r.frequency === 'custom')
+                    .map(renderRoutineCard)}
+                </View>
+              )}
+            </>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </SwipeableView>
   );
 }
 

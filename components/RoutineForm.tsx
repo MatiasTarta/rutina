@@ -6,7 +6,7 @@ import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 import { useRoutinesStore } from '@/stores/routinesStore';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { Colors } from '@/constants/theme';
+import { Colors, getContrastColor } from '@/constants/theme';
 import { Routine } from '@/types';
 
 const colorOptions = [
@@ -158,25 +158,29 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
         <View style={styles.field}>
           <ThemedText type="defaultSemiBold">Frequency</ThemedText>
           <View style={styles.frequencyButtons}>
-            {(['daily', 'weekly', 'custom'] as Routine['frequency'][]).map((f) => (
-              <Pressable
-                key={f}
-                style={[
-                  styles.frequencyButton,
-                  {
-                    backgroundColor: frequency === f ? colors.tint : colors.card,
-                  },
-                ]}
-                onPress={() => setFrequency(f)}>
-                <ThemedText
-                  style={{
-                    color: frequency === f ? '#fff' : colors.text,
-                    textTransform: 'capitalize',
-                  }}>
-                  {f}
-                </ThemedText>
-              </Pressable>
-            ))}
+            {(['daily', 'weekly', 'custom'] as Routine['frequency'][]).map((f) => {
+              const bgColor = frequency === f ? colors.tint : colors.card;
+              const textColor = getContrastColor(bgColor) === 'dark' ? colors.buttonTextDark : colors.buttonText;
+              return (
+                <Pressable
+                  key={f}
+                  style={[
+                    styles.frequencyButton,
+                    {
+                      backgroundColor: bgColor,
+                    },
+                  ]}
+                  onPress={() => setFrequency(f)}>
+                  <ThemedText
+                    style={{
+                      color: textColor,
+                      textTransform: 'capitalize',
+                    }}>
+                    {f}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
 
@@ -185,25 +189,29 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
           <View style={styles.field}>
             <ThemedText type="defaultSemiBold">Select Days</ThemedText>
             <View style={styles.daysGrid}>
-              {daysOfWeek.map((day, index) => (
-                <Pressable
-                  key={day}
-                  style={[
-                    styles.dayButton,
-                    {
-                      backgroundColor: selectedDays.includes(index) ? colors.tint : colors.card,
-                    },
-                  ]}
-                  onPress={() => toggleDay(index)}>
-                  <ThemedText
-                    style={{
-                      color: selectedDays.includes(index) ? '#fff' : colors.text,
-                      fontSize: 12,
-                    }}>
-                    {day}
-                  </ThemedText>
-                </Pressable>
-              ))}
+              {daysOfWeek.map((day, index) => {
+                const bgColor = selectedDays.includes(index) ? colors.tint : colors.card;
+                const textColor = getContrastColor(bgColor) === 'dark' ? colors.buttonTextDark : colors.buttonText;
+                return (
+                  <Pressable
+                    key={day}
+                    style={[
+                      styles.dayButton,
+                      {
+                        backgroundColor: bgColor,
+                      },
+                    ]}
+                    onPress={() => toggleDay(index)}>
+                    <ThemedText
+                      style={{
+                        color: textColor,
+                        fontSize: 12,
+                      }}>
+                      {day}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
         )}
@@ -239,7 +247,7 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
         style={[styles.saveButton, { backgroundColor: colors.tint, opacity: loading ? 0.5 : 1 }]}
         onPress={handleSave}
         disabled={loading || !name.trim()}>
-        <ThemedText style={styles.saveButtonText}>
+        <ThemedText style={[styles.saveButtonText, { color: getContrastColor(colors.tint) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
           {loading ? 'Saving...' : isEdit ? 'Update Routine' : 'Create Routine'}
         </ThemedText>
       </Pressable>
