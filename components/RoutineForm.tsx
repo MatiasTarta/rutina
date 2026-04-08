@@ -138,18 +138,24 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
         <View style={styles.field}>
           <ThemedText type="defaultSemiBold">Color</ThemedText>
           <View style={styles.colorGrid}>
-            {colorOptions.map((c) => (
-              <Pressable
-                key={c}
-                style={[
-                  styles.colorOption,
-                  { backgroundColor: c },
-                  color === c && styles.colorSelected,
-                ]}
-                onPress={() => setColor(c)}>
-                {color === c && <View style={styles.colorCheck} />}
-              </Pressable>
-            ))}
+            {colorOptions.map((c) => {
+              const isSelected = color === c;
+              const checkColor = colorScheme === 'dark' ? colors.buttonTextDark : colors.buttonText;
+              return (
+                <Pressable
+                  key={c}
+                  style={[
+                    styles.colorOption,
+                    { backgroundColor: c },
+                    isSelected && { ...styles.colorSelected, borderColor: checkColor },
+                  ]}
+                  onPress={() => setColor(c)}>
+                  {isSelected && (
+                    <View style={[styles.colorCheck, { backgroundColor: checkColor }]} />
+                  )}
+                </Pressable>
+              );
+            })}
           </View>
         </View>
 
@@ -158,8 +164,13 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
           <ThemedText type="defaultSemiBold">Frequency</ThemedText>
           <View style={styles.frequencyButtons}>
             {(['daily', 'weekly', 'custom'] as Routine['frequency'][]).map((f) => {
-              const bgColor = frequency === f ? colors.tint : colors.card;
-              const textColor = getContrastColor(bgColor) === 'dark' ? colors.buttonTextDark : colors.buttonText;
+              const isSelected = frequency === f;
+              const bgColor = isSelected ? colors.tint : colors.card;
+              const textColor = isSelected && colorScheme === 'dark'
+                ? colors.buttonTextDark
+                : isSelected
+                ? colors.buttonText
+                : colors.text;
               return (
                 <Pressable
                   key={f}
@@ -189,8 +200,13 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
             <ThemedText type="defaultSemiBold">Select Days</ThemedText>
             <View style={styles.daysGrid}>
               {daysOfWeek.map((day, index) => {
-                const bgColor = selectedDays.includes(index) ? colors.tint : colors.card;
-                const textColor = getContrastColor(bgColor) === 'dark' ? colors.buttonTextDark : colors.buttonText;
+                const isSelected = selectedDays.includes(index);
+                const bgColor = isSelected ? colors.tint : colors.card;
+                const textColor = isSelected && colorScheme === 'dark'
+                  ? colors.buttonTextDark
+                  : isSelected
+                  ? colors.buttonText
+                  : colors.text;
                 return (
                   <Pressable
                     key={day}
@@ -246,7 +262,7 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
         style={[styles.saveButton, { backgroundColor: colors.tint, opacity: loading ? 0.5 : 1 }]}
         onPress={handleSave}
         disabled={loading || !name.trim()}>
-        <ThemedText style={[styles.saveButtonText, { color: getContrastColor(colors.tint) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
+        <ThemedText style={[styles.saveButtonText, { color: colorScheme === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
           {loading ? 'Saving...' : isEdit ? 'Update Routine' : 'Create Routine'}
         </ThemedText>
       </Pressable>

@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { Colors } from '@/constants/theme';
+import { Colors, getContrastColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTasksStore } from '@/stores/tasksStore';
 import { Task, priorityColors } from '@/types';
@@ -172,7 +172,11 @@ export function TaskForm({ taskId, isEdit }: TaskFormProps) {
                 onPress={() => setPriority(p)}>
                 <ThemedText
                   style={{
-                    color: priority === p ? '#fff' : colors.text,
+                    color: priority === p
+                      ? colorScheme === 'dark'
+                        ? colors.buttonTextDark
+                        : colors.buttonText
+                      : colors.text,
                     textTransform: 'capitalize',
                   }}>
                   {p}
@@ -188,7 +192,7 @@ export function TaskForm({ taskId, isEdit }: TaskFormProps) {
         style={[styles.saveButton, { backgroundColor: colors.tint, opacity: loading ? 0.5 : 1 }]}
         onPress={handleSave}
         disabled={loading || !title.trim()}>
-        <ThemedText style={styles.saveButtonText}>
+        <ThemedText style={[styles.saveButtonText, { color: colorScheme === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
           {loading ? 'Saving...' : isEdit ? 'Update Task' : 'Create Task'}
         </ThemedText>
       </Pressable>
