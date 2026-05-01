@@ -12,11 +12,13 @@ import { useRoutinesStore } from '@/stores/routinesStore';
 import { Colors, getContrastColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { formatDate } from '@/utils/helpers';
+import { useResponsive } from '@/hooks/useResponsive';
 
 export default function TodayScreen() {
   const router = useRouter();
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { isTablet } = useResponsive();
   const [refreshing, setRefreshing] = useState(false);
 
   const { tasks, fetchTasks, setTaskStatus } = useTasksStore();
@@ -88,31 +90,31 @@ export default function TodayScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, isTablet && styles.scrollContentWide]}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
           {/* Header */}
           <View style={styles.header}>
             <View>
-              <ThemedText type="title">Today</ThemedText>
-              <ThemedText type="default" style={{ color: colors.icon }}>
+              <ThemedText type="title" style={[styles.titleText, isTablet && styles.titleTextWide]}>Today</ThemedText>
+              <ThemedText type="default" style={[styles.subtitleText, { color: colors.icon }, isTablet && styles.subtitleTextWide]}>
                 {formatDisplayDate(today)}
               </ThemedText>
             </View>
           </View>
 
           {/* Quick Actions */}
-          <View style={styles.quickActions}>
+          <View style={[styles.quickActions, isTablet && styles.quickActionsWide]}>
             <Pressable
-              style={[styles.quickAction, { backgroundColor: colors.success }]}
+              style={[styles.quickAction, { backgroundColor: colors.success }, isTablet && styles.quickActionWide]}
               onPress={handleAddTask}>
-              <Text style={[styles.quickActionIcon, { color: getContrastColor(colors.success) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>+</Text>
-              <ThemedText style={[styles.quickActionText, { color: getContrastColor(colors.success) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>Task</ThemedText>
+              <Text style={[styles.quickActionIcon, isTablet && styles.quickActionIconWide, { color: getContrastColor(colors.success) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>+</Text>
+              <ThemedText style={[styles.quickActionText, isTablet && styles.quickActionTextWide, { color: getContrastColor(colors.success) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>Task</ThemedText>
             </Pressable>
             <Pressable
-              style={[styles.quickAction, { backgroundColor: colors.secondary }]}
+              style={[styles.quickAction, { backgroundColor: colors.secondary }, isTablet && styles.quickActionWide]}
               onPress={handleAddRoutine}>
-              <Text style={[styles.quickActionIcon, { color: getContrastColor(colors.secondary) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>+</Text>
-              <ThemedText style={[styles.quickActionText, { color: getContrastColor(colors.secondary) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>Routine</ThemedText>
+              <Text style={[styles.quickActionIcon, isTablet && styles.quickActionIconWide, { color: getContrastColor(colors.secondary) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>+</Text>
+              <ThemedText style={[styles.quickActionText, isTablet && styles.quickActionTextWide, { color: getContrastColor(colors.secondary) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>Routine</ThemedText>
             </Pressable>
           </View>
 
@@ -222,13 +224,33 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
   },
+  scrollContentWide: {
+    padding: 24,
+    maxWidth: 900,
+    alignSelf: 'center',
+  },
   header: {
     marginBottom: 20,
+  },
+  titleText: {
+    fontSize: 28,
+  },
+  titleTextWide: {
+    fontSize: 36,
+  },
+  subtitleText: {
+    fontSize: 14,
+  },
+  subtitleTextWide: {
+    fontSize: 18,
   },
   quickActions: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 24,
+  },
+  quickActionsWide: {
+    gap: 16,
   },
   quickAction: {
     flex: 1,
@@ -239,24 +261,55 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     gap: 8,
   },
+  quickActionWide: {
+    paddingVertical: 18,
+    borderRadius: 12,
+  },
   quickActionIcon: {
     fontSize: 18,
     fontWeight: '300',
+  },
+  quickActionIconWide: {
+    fontSize: 22,
   },
   quickActionText: {
     fontWeight: '600',
     fontSize: 14,
   },
+  quickActionTextWide: {
+    fontSize: 16,
+  },
   section: {
     marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    marginBottom: 12,
+  },
+  sectionTitleWide: {
+    fontSize: 22,
+    marginBottom: 16,
   },
   emptyState: {
     padding: 24,
     borderRadius: 8,
     alignItems: 'center',
   },
+  emptyStateWide: {
+    padding: 32,
+    borderRadius: 12,
+  },
+  emptyStateText: {
+    fontSize: 14,
+  },
   emptyAction: {
     marginTop: 8,
+  },
+  itemsContainer: {
+    gap: 8,
+  },
+  itemsContainerWide: {
+    gap: 12,
   },
   taskItem: {
     flexDirection: 'row',
@@ -267,6 +320,11 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 8,
   },
+  taskItemWide: {
+    padding: 16,
+    borderRadius: 12,
+    gap: 16,
+  },
   routineItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -276,6 +334,11 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 8,
   },
+  routineItemWide: {
+    padding: 16,
+    borderRadius: 12,
+    gap: 16,
+  },
   checkbox: {
     width: 22,
     height: 22,
@@ -284,16 +347,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  checkboxWide: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2.5,
+  },
   checkboxFilled: {
     width: 12,
     height: 12,
     borderRadius: 6,
   },
+  checkboxFilledWide: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
   taskContent: {
     flex: 1,
   },
+  taskContentWide: {
+    flex: 1.5,
+  },
+  taskTextWide: {
+    fontSize: 16,
+  },
+  taskTime: {
+    fontSize: 12,
+  },
+  taskTimeWide: {
+    fontSize: 14,
+  },
   routineContent: {
     flex: 1,
+  },
+  routineContentWide: {
+    flex: 1.5,
+  },
+  routineTextWide: {
+    fontSize: 16,
+  },
+  routineTime: {
+    fontSize: 12,
+  },
+  routineTimeWide: {
+    fontSize: 14,
   },
   completedText: {
     textDecorationLine: 'line-through',
@@ -306,6 +404,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  priorityBadgeWide: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+  },
   priorityText: {
     fontSize: 10,
     fontWeight: '700',
@@ -314,5 +417,10 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
+  },
+  colorDotWide: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
 });

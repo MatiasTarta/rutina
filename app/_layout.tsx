@@ -1,6 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { setBackgroundColorAsync } from 'expo-system-ui';
 import 'react-native-reanimated';
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator } from 'react-native';
@@ -31,6 +32,10 @@ export default function RootLayout() {
     };
     init();
   }, []);
+
+  useEffect(() => {
+    setBackgroundColorAsync(colors.background);
+  }, [colorScheme, colors.background]);
 
   if (!isReady) {
     return (

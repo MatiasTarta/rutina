@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, Pressable, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Pressable, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { SwipeableView } from '@/components/SwipeableView';
 import { useTasksStore } from '@/stores/tasksStore';
 import { useRoutinesStore } from '@/stores/routinesStore';
 import { Colors, getContrastColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { formatDate, addDays, isToday } from '@/utils/helpers';
+import { formatDate, isToday } from '@/utils/helpers';
+import { useResponsive } from '@/hooks/useResponsive';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -21,6 +21,7 @@ const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export default function CalendarScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { isTablet } = useResponsive();
 
   const { tasks, fetchTasks } = useTasksStore();
   const { routines, fetchRoutines } = useRoutinesStore();
@@ -86,120 +87,122 @@ export default function CalendarScreen() {
     <SwipeableView>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={goToPreviousMonth} style={styles.navButton}>
-          <ThemedText>{'<'}</ThemedText>
-        </Pressable>
-        <View style={styles.headerCenter}>
-          <ThemedText type="title">
-            {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </ThemedText>
-        </View>
-        <Pressable onPress={goToNextMonth} style={styles.navButton}>
-          <ThemedText>{'>'}</ThemedText>
-        </Pressable>
-      </View>
-
-      {/* Day names header */}
-      <View style={styles.dayNamesRow}>
-        {DAY_NAMES.map((day) => (
-          <View key={day} style={styles.dayNameCell}>
-            <ThemedText style={{ color: colors.icon, fontSize: 12 }}>{day}</ThemedText>
-          </View>
-        ))}
-      </View>
-
-      {/* Calendar grid */}
-      <View style={styles.calendarGrid}>
-        {days.map((day, index) => {
-          if (!day) {
-            return <View key={`empty-${index}`} style={styles.dayCell} />;
-          }
-
-          const taskCount = getTaskCountForDate(day);
-          const isTodayDate = isToday(day);
-          const isSelected = selectedDate && formatDate(day) === formatDate(selectedDate);
-
-          return (
-            <Pressable
-              key={formatDate(day)}
-              style={[
-                styles.dayCell,
-                isSelected && { backgroundColor: colors.card },
-                isTodayDate && { backgroundColor: colors.card },
-              ]}
-              onPress={() => setSelectedDate(day)}>
-              <View style={[styles.dayNumberContainer, isTodayDate && { backgroundColor: colors.tint }]}>
-                <Text style={[styles.dayNumber, { color: isTodayDate ? colors.background : colors.text }]}>
-                  {day.getDate()}
-                </Text>
-              </View>
-              {taskCount > 0 && (
-                <View style={styles.dotsContainer}>
-                  {Array.from({ length: Math.min(taskCount, 3) }).map((_, i) => (
-                    <View
-                      key={i}
-                      style={[styles.dot, { backgroundColor: colors.tint }]}
-                    />
-                  ))}
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
-      </View>
-
-      {/* Selected date tasks */}
-      {selectedDate && (
-        <View style={[styles.selectedDateSection, { borderTopColor: colors.cardBorder }]}>
-          <View style={styles.selectedDateHeader}>
-            <ThemedText type="subtitle">
-              {selectedDate.toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-              })}
+        <View style={[styles.header, isTablet && styles.headerWide]}>
+          <Pressable onPress={goToPreviousMonth} style={[styles.navButton, isTablet && styles.navButtonWide]}>
+            <ThemedText style={[styles.navButtonText, isTablet && styles.navButtonTextWide]}> {'<'} </ThemedText>
+          </Pressable>
+          <View style={styles.headerCenter}>
+            <ThemedText type="title" style={[styles.monthTitle, isTablet && styles.monthTitleWide]}>
+              {MONTHS[currentDate.getMonth()]} {currentDate.getFullYear()}
             </ThemedText>
-            {!isToday(selectedDate) && (
-              <Pressable onPress={goToToday}>
-                <ThemedText style={{ color: colors.tint, fontSize: 12 }}>Today</ThemedText>
-              </Pressable>
-            )}
           </View>
+          <Pressable onPress={goToNextMonth} style={[styles.navButton, isTablet && styles.navButtonWide]}>
+            <ThemedText style={[styles.navButtonText, isTablet && styles.navButtonTextWide]}> {'>'} </ThemedText>
+          </Pressable>
+        </View>
 
-          {selectedDateTasks.length === 0 ? (
-            <ThemedText style={{ color: colors.icon }}>No tasks for this day</ThemedText>
-          ) : (
-            selectedDateTasks.map((task) => (
-              <View
-                key={task.id}
-                style={[styles.taskItem, { backgroundColor: colors.card }]}>
-                <View style={styles.taskInfo}>
-                  <ThemedText
-                    type="defaultSemiBold"
-                    style={task.status === 'completed' && styles.completedText}>
-                    {task.title}
-                  </ThemedText>
-                  {task.dueTime && (
-                    <ThemedText style={{ color: colors.icon, fontSize: 12 }}>
-                      {task.dueTime}
-                    </ThemedText>
-                  )}
-                </View>
-                <View
-                  style={[
-                    styles.priorityBadge,
-                    { backgroundColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`] },
-                  ]}>
-                  <Text style={[styles.priorityText, { color: getContrastColor(colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
-                    {task.priority}
+        {/* Day names header */}
+        <View style={[styles.dayNamesRow, isTablet && styles.dayNamesRowWide]}>
+          {DAY_NAMES.map((day) => (
+            <View key={day} style={styles.dayNameCell}>
+              <ThemedText style={[styles.dayNameText, { color: colors.icon }, isTablet && styles.dayNameTextWide]}>{day}</ThemedText>
+            </View>
+          ))}
+        </View>
+
+        {/* Calendar grid */}
+        <View style={[styles.calendarGrid, isTablet && styles.calendarGridWide]}>
+          {days.map((day, index) => {
+            if (!day) {
+              return <View key={`empty-${index}`} style={styles.dayCell} />;
+            }
+
+            const taskCount = getTaskCountForDate(day);
+            const isTodayDate = isToday(day);
+            const isSelected = selectedDate && formatDate(day) === formatDate(selectedDate);
+
+            return (
+              <Pressable
+                key={formatDate(day)}
+                style={[
+                  styles.dayCell,
+                  isSelected && { backgroundColor: colors.card },
+                  isTodayDate && { backgroundColor: colors.card },
+                  isTablet && styles.dayCellWide,
+                ]}
+                onPress={() => setSelectedDate(day)}>
+                <View style={[styles.dayNumberContainer, isTodayDate && { backgroundColor: colors.tint }, isTablet && styles.dayNumberContainerWide]}>
+                  <Text style={[styles.dayNumber, { color: isTodayDate ? colors.background : colors.text }, isTablet && styles.dayNumberWide]}>
+                    {day.getDate()}
                   </Text>
                 </View>
-              </View>
-            ))
-          )}
+                {taskCount > 0 && (
+                  <View style={styles.dotsContainer}>
+                    {Array.from({ length: Math.min(taskCount, 3) }).map((_, i) => (
+                      <View
+                        key={i}
+                        style={[styles.dot, isTablet && styles.dotWide, { backgroundColor: colors.tint }]}
+                      />
+                    ))}
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
         </View>
-      )}
+
+        {/* Selected date tasks */}
+        {selectedDate && (
+          <View style={[styles.selectedDateSection, { borderTopColor: colors.cardBorder }, isTablet && styles.selectedDateSectionWide]}>
+            <View style={styles.selectedDateHeader}>
+              <ThemedText type="subtitle" style={[styles.selectedDateTitle, isTablet && styles.selectedDateTitleWide]}>
+                {selectedDate.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </ThemedText>
+              {!isToday(selectedDate) && (
+                <Pressable onPress={goToToday}>
+                  <ThemedText style={[styles.todayButton, { color: colors.tint }, isTablet && styles.todayButtonWide]}>Today</ThemedText>
+                </Pressable>
+              )}
+            </View>
+
+            {selectedDateTasks.length === 0 ? (
+              <ThemedText style={[styles.emptyStateText, { color: colors.icon }]}>No tasks for this day</ThemedText>
+            ) : (
+              selectedDateTasks.map((task) => (
+                <View
+                  key={task.id}
+                  style={[styles.taskItem, { backgroundColor: colors.card }, isTablet && styles.taskItemWide]}>
+                  <View style={styles.taskInfo}>
+                    <ThemedText
+                      type="defaultSemiBold"
+                      style={[task.status === 'completed' && styles.completedText, isTablet && styles.taskTitleWide]}>
+                      {task.title}
+                    </ThemedText>
+                    {task.dueTime && (
+                      <ThemedText style={[styles.taskTime, { color: colors.icon }, isTablet && styles.taskTimeWide]}>
+                        {task.dueTime}
+                      </ThemedText>
+                    )}
+                  </View>
+                  <View
+                    style={[
+                      styles.priorityBadge,
+                      isTablet && styles.priorityBadgeWide,
+                      { backgroundColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`] },
+                    ]}>
+                    <Text style={[styles.priorityText, { color: getContrastColor(colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
+                      {task.priority}
+                    </Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </View>
+        )}
       </SafeAreaView>
     </SwipeableView>
   );
@@ -216,32 +219,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+  headerWide: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
   headerCenter: {
     alignItems: 'center',
   },
+  monthTitle: {
+    fontSize: 16,
+  },
+  monthTitleWide: {
+    fontSize: 22,
+  },
   navButton: {
     padding: 8,
+  },
+  navButtonWide: {
+    padding: 12,
+  },
+  navButtonText: {
+    fontSize: 18,
+  },
+  navButtonTextWide: {
+    fontSize: 24,
   },
   dayNamesRow: {
     flexDirection: 'row',
     paddingHorizontal: 8,
     marginBottom: 4,
   },
+  dayNamesRowWide: {
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
   dayNameCell: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
+  },
+  dayNameText: {
+    fontSize: 12,
+  },
+  dayNameTextWide: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 8,
   },
+  calendarGridWide: {
+    paddingHorizontal: 16,
+  },
   dayCell: {
     width: '14.28%',
     aspectRatio: 1,
     alignItems: 'center',
     paddingVertical: 4,
+  },
+  dayCellWide: {
+    paddingVertical: 8,
   },
   dayNumberContainer: {
     width: 32,
@@ -250,8 +289,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  dayNumberContainerWide: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
   dayNumber: {
     fontSize: 14,
+  },
+  dayNumberWide: {
+    fontSize: 16,
+    fontWeight: '600',
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -263,16 +311,40 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
   },
+  dotWide: {
+    width: 6,
+    height: 6,
+  },
   selectedDateSection: {
     flex: 1,
     padding: 16,
     borderTopWidth: 1,
+  },
+  selectedDateSectionWide: {
+    padding: 24,
+    borderTopWidth: 2,
   },
   selectedDateHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+  },
+  selectedDateTitle: {
+    fontSize: 16,
+  },
+  selectedDateTitleWide: {
+    fontSize: 20,
+  },
+  todayButton: {
+    fontSize: 12,
+  },
+  todayButtonWide: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyStateText: {
+    fontSize: 14,
   },
   taskItem: {
     flexDirection: 'row',
@@ -282,13 +354,32 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 8,
   },
+  taskItemWide: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
   taskInfo: {
     flex: 1,
+  },
+  taskTitleWide: {
+    fontSize: 16,
+  },
+  taskTime: {
+    fontSize: 12,
+  },
+  taskTimeWide: {
+    fontSize: 14,
   },
   priorityBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
+  },
+  priorityBadgeWide: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
   priorityText: {
     fontSize: 10,

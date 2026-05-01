@@ -3,20 +3,21 @@ import { StyleSheet, View, ScrollView, Pressable, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { SwipeableView } from '@/components/SwipeableView';
 import { useTasksStore } from '@/stores/tasksStore';
 import { useRoutinesStore } from '@/stores/routinesStore';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { formatDate, getStartOfWeek, addDays, isToday, isSameDay } from '@/utils/helpers';
+import { useResponsive } from '@/hooks/useResponsive';
 
 export default function WeekScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
+  const { isTablet } = useResponsive();
 
   const { tasks, fetchTasks } = useTasksStore();
-  const { routines, completions, fetchRoutines, fetchCompletions, isCompletedOnDate } = useRoutinesStore();
+  const { routines, fetchRoutines, isCompletedOnDate } = useRoutinesStore();
 
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getStartOfWeek(new Date()));
 
@@ -24,8 +25,7 @@ export default function WeekScreen() {
     const weekEnd = addDays(currentWeekStart, 6);
     fetchTasks(currentWeekStart, weekEnd);
     fetchRoutines(true);
-    fetchCompletions(undefined, currentWeekStart, weekEnd);
-  }, [currentWeekStart]);
+  }, [currentWeekStart, fetchTasks, fetchRoutines]);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
 
@@ -78,24 +78,26 @@ export default function WeekScreen() {
     <SwipeableView>
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header with week navigation */}
-        <View style={styles.header}>
-          <Pressable onPress={goToPreviousWeek} style={styles.navButton}>
-            <ThemedText>{'<'}</ThemedText>
+        <View style={[styles.header, isTablet && styles.headerWide]}>
+          <Pressable onPress={goToPreviousWeek} style={[styles.navButton, isTablet && styles.navButtonWide]}>
+            <ThemedText style={[styles.navButtonText, isTablet && styles.navButtonTextWide]}> {'<'} </ThemedText>
           </Pressable>
           <View style={styles.headerCenter}>
-            <ThemedText type="title">{formatWeekRange()}</ThemedText>
+            <ThemedText type="title" style={[styles.weekRange, isTablet && styles.weekRangeWide]}>
+              {formatWeekRange()}
+            </ThemedText>
             {!isSameDay(currentWeekStart, getStartOfWeek(new Date())) && (
               <Pressable onPress={goToThisWeek}>
-                <ThemedText style={{ color: colors.tint, fontSize: 12 }}>Today</ThemedText>
+                <ThemedText style={[styles.todayButton, { color: colors.tint }, isTablet && styles.todayButtonWide]}>Today</ThemedText>
               </Pressable>
             )}
           </View>
-          <Pressable onPress={goToNextWeek} style={styles.navButton}>
-            <ThemedText>{'>'}</ThemedText>
+          <Pressable onPress={goToNextWeek} style={[styles.navButton, isTablet && styles.navButtonWide]}>
+            <ThemedText style={[styles.navButtonText, isTablet && styles.navButtonTextWide]}> {'>'} </ThemedText>
           </Pressable>
         </View>
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, isTablet && styles.scrollContentWide]}>
           {weekDays.map((day) => {
             const dayTasks = getTasksForDay(day);
             const dayRoutines = getRoutinesForDay(day);
@@ -104,13 +106,13 @@ export default function WeekScreen() {
             return (
               <View
                 key={formatDate(day)}
-                style={[styles.dayColumn, isTodayDate && { backgroundColor: colors.card }]}>
+                style={[styles.dayColumn, isTodayDate && { backgroundColor: colors.card }, isTablet && styles.dayColumnWide]}>
                 <View style={[styles.dayHeader, isTodayDate && { borderBottomColor: colors.tint }]}>
-                  <ThemedText type="defaultSemiBold" style={isTodayDate && { color: colors.tint }}>
+                  <ThemedText type="defaultSemiBold" style={[styles.dayName, isTodayDate && { color: colors.tint }, isTablet && styles.dayNameWide]}>
                     {dayNames[day.getDay()]}
                   </ThemedText>
-                  <View style={[styles.dayNumber, isTodayDate && { backgroundColor: colors.tint }]}>
-                    <Text style={[styles.dayNumberText, isTodayDate && { color: colors.background }]}>
+                  <View style={[styles.dayNumber, isTodayDate && { backgroundColor: colors.tint }, isTablet && styles.dayNumberWide]}>
+                    <Text style={[styles.dayNumberText, isTodayDate && { color: colors.background }, isTablet && styles.dayNumberTextWide]}>
                       {day.getDate()}
                     </Text>
                   </View>
@@ -119,20 +121,20 @@ export default function WeekScreen() {
                 {/* Tasks */}
                 {dayTasks.length > 0 && (
                   <View style={styles.section}>
-                    <ThemedText type="defaultSemiBold" style={{ fontSize: 12, marginBottom: 4 }}>
+                    <ThemedText type="defaultSemiBold" style={[styles.sectionLabel, isTablet && styles.sectionLabelWide]}>
                       Tasks
                     </ThemedText>
                     {dayTasks.map((task) => (
                       <View
                         key={task.id}
-                        style={[styles.taskItem, { borderLeftColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`] }]}>
+                        style={[styles.taskItem, { borderLeftColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`] }, isTablet && styles.taskItemWide]}>
                         <ThemedText
                           type="default"
-                          style={task.status === 'completed' && styles.completedText}>
+                          style={[task.status === 'completed' && styles.completedText, isTablet && styles.taskTitleWide]}>
                           {task.title}
                         </ThemedText>
                         {task.dueTime && (
-                          <ThemedText style={{ color: colors.icon, fontSize: 11 }}>
+                          <ThemedText style={[styles.taskTime, { color: colors.icon }, isTablet && styles.taskTimeWide]}>
                             {task.dueTime}
                           </ThemedText>
                         )}
@@ -144,7 +146,7 @@ export default function WeekScreen() {
                 {/* Routines */}
                 {dayRoutines.length > 0 && (
                   <View style={styles.section}>
-                    <ThemedText type="defaultSemiBold" style={{ fontSize: 12, marginBottom: 4 }}>
+                    <ThemedText type="defaultSemiBold" style={[styles.sectionLabel, isTablet && styles.sectionLabelWide]}>
                       Routines
                     </ThemedText>
                     {dayRoutines.map((routine) => {
@@ -152,17 +154,18 @@ export default function WeekScreen() {
                       return (
                         <View
                           key={routine.id}
-                          style={[styles.routineItem, { opacity: isCompleted ? 0.6 : 1 }]}>
+                          style={[styles.routineItem, { opacity: isCompleted ? 0.6 : 1 }, isTablet && styles.routineItemWide]}>
                           <View
                             style={[
                               styles.routineDot,
+                              isTablet && styles.routineDotWide,
                               { backgroundColor: routine.color || colors.tint },
                             ]}
                           />
-                          <ThemedText type="default" style={isCompleted && styles.completedText}>
+                          <ThemedText type="default" style={[isCompleted && styles.completedText, isTablet && styles.routineNameWide]}>
                             {routine.name}
                           </ThemedText>
-                          {isCompleted && <Text style={{ color: colors.success }}> ✓</Text>}
+                          {isCompleted && <Text style={[styles.completedIcon, { color: colors.success }, isTablet && styles.completedIconWide]}> ✓</Text>}
                         </View>
                       );
                     })}
@@ -170,7 +173,7 @@ export default function WeekScreen() {
                 )}
 
                 {dayTasks.length === 0 && dayRoutines.length === 0 && (
-                  <ThemedText style={{ color: colors.icon, fontSize: 12, textAlign: 'center', padding: 8 }}>
+                  <ThemedText style={[styles.emptyDay, { color: colors.icon }, isTablet && styles.emptyDayWide]}>
                     -
                   </ThemedText>
                 )}
@@ -194,11 +197,37 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
+  headerWide: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
   headerCenter: {
     alignItems: 'center',
   },
+  weekRange: {
+    fontSize: 16,
+  },
+  weekRangeWide: {
+    fontSize: 20,
+  },
   navButton: {
     padding: 8,
+  },
+  navButtonWide: {
+    padding: 12,
+  },
+  navButtonText: {
+    fontSize: 18,
+  },
+  navButtonTextWide: {
+    fontSize: 24,
+  },
+  todayButton: {
+    fontSize: 12,
+  },
+  todayButtonWide: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
@@ -207,10 +236,21 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 8,
   },
+  scrollContentWide: {
+    padding: 24,
+    gap: 12,
+    maxWidth: 1200,
+    alignSelf: 'center',
+  },
   dayColumn: {
     borderRadius: 8,
     marginBottom: 8,
     padding: 12,
+  },
+  dayColumnWide: {
+    borderRadius: 12,
+    marginBottom: 12,
+    padding: 16,
   },
   dayHeader: {
     flexDirection: 'row',
@@ -220,6 +260,12 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     borderBottomWidth: 1,
   },
+  dayName: {
+    fontSize: 14,
+  },
+  dayNameWide: {
+    fontSize: 16,
+  },
   dayNumber: {
     width: 28,
     height: 28,
@@ -227,17 +273,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  dayNumberWide: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
   dayNumberText: {
     fontSize: 14,
     fontWeight: '600',
   },
+  dayNumberTextWide: {
+    fontSize: 16,
+  },
   section: {
     marginBottom: 8,
+  },
+  sectionLabel: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  sectionLabelWide: {
+    fontSize: 14,
+    marginBottom: 6,
   },
   taskItem: {
     paddingVertical: 4,
     paddingLeft: 8,
     borderLeftWidth: 3,
+  },
+  taskItemWide: {
+    paddingVertical: 6,
+    paddingLeft: 12,
+    borderLeftWidth: 4,
+    marginBottom: 4,
+  },
+  taskTitleWide: {
+    fontSize: 14,
+  },
+  taskTime: {
+    fontSize: 11,
+  },
+  taskTimeWide: {
+    fontSize: 13,
   },
   routineItem: {
     flexDirection: 'row',
@@ -245,10 +322,38 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     gap: 6,
   },
+  routineItemWide: {
+    paddingVertical: 4,
+    gap: 8,
+    marginBottom: 4,
+  },
   routineDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  routineDotWide: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  routineNameWide: {
+    fontSize: 14,
+  },
+  completedIcon: {
+    fontSize: 12,
+  },
+  completedIconWide: {
+    fontSize: 14,
+  },
+  emptyDay: {
+    fontSize: 12,
+    textAlign: 'center',
+    padding: 8,
+  },
+  emptyDayWide: {
+    fontSize: 14,
+    padding: 12,
   },
   completedText: {
     textDecorationLine: 'line-through',

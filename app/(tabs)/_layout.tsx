@@ -17,6 +17,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.icon,
+        tabBarLabelStyle: styles.tabBarLabel,
         tabBarStyle: [
           styles.tabBar,
           { backgroundColor: colors.background, borderTopColor: colors.cardBorder },
@@ -61,5 +62,9 @@ const styles = StyleSheet.create({
     paddingBottom: 25,
     paddingTop: 10,
     borderTopWidth: 1,
+  },
+  tabBarLabel: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
