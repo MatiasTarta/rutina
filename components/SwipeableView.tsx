@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
-import { Gesture, GestureDetector, Directions } from 'react-native-gesture-handler';
+import { usePathname, useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, useWindowDimensions } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS } from 'react-native-reanimated';
-import { useRouter, usePathname } from 'expo-router';
 
 const TABS = ['index', 'week', 'calendar', 'habits'] as const;
 type TabName = typeof TABS[number];
@@ -16,40 +16,62 @@ export function SwipeableView({ children }: SwipeableViewProps) {
   const pathname = usePathname();
   const { width } = useWindowDimensions();
 
-  const getCurrentTabIndex = () => {
+  const getIndexFromPath = useCallback(() => {
     const currentTab = pathname.split('/').pop() || 'index';
-    return TABS.indexOf(currentTab as TabName);
-  };
+    return Math.max(0, TABS.indexOf(currentTab as TabName));
+  }, [pathname]);
 
-  const navigateToTab = (index: number) => {
-    if (index >= 0 && index < TABS.length) {
-      const tab = TABS[index];
-      router.replace(`/(tabs)/${tab}`);
+  const [currentIndex, setCurrentIndex] = useState(getIndexFromPath());
+
+  // 🔒 lock para evitar múltiples ejecuciones
+  const isSwipingRef = useRef(false);
+
+  useEffect(() => {
+    const newIndex = getIndexFromPath();
+    if (newIndex !== currentIndex) {
+      setCurrentIndex(newIndex);
     }
-  };
+  }, [pathname]);
 
-  const swipeLeft = Gesture.Fling()
-    .direction(Directions.LEFT)
-    .onEnd(() => {
-      const currentIndex = getCurrentTabIndex();
-      if (currentIndex < TABS.length - 1) {
-        runOnJS(navigateToTab)(currentIndex + 1);
+  const navigateToTab = useCallback((index: number) => {
+    if (index >= 0 && index < TABS.length) {
+      setCurrentIndex(index);
+      router.replace(`/(tabs)/${TABS[index]}` as any);
+    }
+  }, []);
+
+  const handleSwipe = useCallback((direction: 'left' | 'right') => {
+    if (isSwipingRef.current) return;
+
+    isSwipingRef.current = true;
+
+    if (direction === 'left' && currentIndex < TABS.length - 1) {
+      navigateToTab(currentIndex + 1);
+    }
+
+    if (direction === 'right' && currentIndex > 0) {
+      navigateToTab(currentIndex - 1);
+    }
+
+    // liberar lock después de un tiempo
+    setTimeout(() => {
+      isSwipingRef.current = false;
+    }, 300);
+  }, [currentIndex]);
+
+  const panGesture = Gesture.Pan()
+    .onEnd((event) => {
+      const threshold = 60;
+
+      if (event.translationX < -threshold) {
+        runOnJS(handleSwipe)('left');
+      } else if (event.translationX > threshold) {
+        runOnJS(handleSwipe)('right');
       }
     });
-
-  const swipeRight = Gesture.Fling()
-    .direction(Directions.RIGHT)
-    .onEnd(() => {
-      const currentIndex = getCurrentTabIndex();
-      if (currentIndex > 0) {
-        runOnJS(navigateToTab)(currentIndex - 1);
-      }
-    });
-
-  const combinedGestures = Gesture.Exclusive(swipeLeft, swipeRight);
 
   return (
-    <GestureDetector gesture={combinedGestures}>
+    <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.container, { width }]}>
         {children}
       </Animated.View>

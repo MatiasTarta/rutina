@@ -1,15 +1,23 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThemedText } from '@/components/themed-text';
 import { SwipeableView } from '@/components/SwipeableView';
-import { useTasksStore } from '@/stores/tasksStore';
-import { useRoutinesStore } from '@/stores/routinesStore';
+import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { formatDate, getStartOfWeek, addDays, isToday, isSameDay } from '@/utils/helpers';
 import { useResponsive } from '@/hooks/useResponsive';
+import { useRoutinesStore } from '@/stores/routinesStore';
+import { useTasksStore } from '@/stores/tasksStore';
+import { addDays, formatDate, getStartOfWeek, isSameDay, isToday } from '@/utils/helpers';
+
+type TaskPriority = 'low' | 'medium' | 'high';
+
+const priorityToColorKey: Record<TaskPriority, keyof typeof Colors.light> = {
+  low: 'success',
+  medium: 'warning',
+  high: 'error',
+};
 
 export default function WeekScreen() {
   const colorScheme = useColorScheme();
@@ -127,7 +135,16 @@ export default function WeekScreen() {
                     {dayTasks.map((task) => (
                       <View
                         key={task.id}
-                        style={[styles.taskItem, { borderLeftColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`] }, isTablet && styles.taskItemWide]}>
+                        style={[
+                          styles.taskItem,
+                          {
+                            borderLeftColor:
+                              colors[
+                              priorityToColorKey[task.priority as keyof typeof priorityToColorKey]
+                              ] ?? colors.tint,
+                          },
+                          isTablet && styles.taskItemWide,
+                        ]}>
                         <ThemedText
                           type="default"
                           style={[task.status === 'completed' && styles.completedText, isTablet && styles.taskTitleWide]}>

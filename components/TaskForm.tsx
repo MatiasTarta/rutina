@@ -2,12 +2,16 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { Colors, getContrastColor } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTasksStore } from '@/stores/tasksStore';
-import { Task, priorityColors } from '@/types';
+import { Task } from '@/types';
 import { ThemedText } from './themed-text';
-
+const priorityColors = {
+  low: '#4CAF50',    // green
+  medium: '#FFC107', // amber
+  high: '#F44336',   // red
+};
 interface TaskFormProps {
   taskId?: string;
   isEdit?: boolean;

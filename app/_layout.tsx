@@ -1,15 +1,15 @@
+import { Colors } from '@/constants/theme';
+import { initializeDatabase } from '@/database';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { setBackgroundColorAsync } from 'expo-system-ui';
-import 'react-native-reanimated';
 import { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { initializeDatabase } from '@/database';
-import { Colors } from '@/constants/theme';
 
 export const unstable_settings = {
   anchor: '(tabs)',
