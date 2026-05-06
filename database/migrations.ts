@@ -5,7 +5,9 @@ const SCHEMA_VERSION = 1;
 export const runMigrations = async (): Promise<void> => {
   const db = await getDatabase();
 
-  // Create routines table
+  console.log('🚀 Running migrations...');
+
+  // Routines
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS routines (
       id TEXT PRIMARY KEY NOT NULL,
@@ -24,8 +26,9 @@ export const runMigrations = async (): Promise<void> => {
       updated_at TEXT NOT NULL
     );
   `);
+  console.log('✅ routines OK');
 
-  // Create tasks table
+  // Tasks (FIXED)
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS tasks (
       id TEXT PRIMARY KEY NOT NULL,
@@ -39,12 +42,12 @@ export const runMigrations = async (): Promise<void> => {
       category_id TEXT,
       tags TEXT,
       created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      FOREIGN KEY (category_id) REFERENCES categories(id)
+      updated_at TEXT NOT NULL
     );
   `);
+  console.log('✅ tasks OK');
 
-  // Create routine completions table
+  // Routine completions (SIN foreign key para evitar problemas en web)
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS routine_completions (
       id TEXT PRIMARY KEY NOT NULL,
@@ -54,12 +57,12 @@ export const runMigrations = async (): Promise<void> => {
       notes TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      FOREIGN KEY (routine_id) REFERENCES routines(id),
       UNIQUE(routine_id, date)
     );
   `);
+  console.log('✅ completions OK');
 
-  // Create categories table
+  // Categories
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS categories (
       id TEXT PRIMARY KEY NOT NULL,
@@ -70,27 +73,30 @@ export const runMigrations = async (): Promise<void> => {
       updated_at TEXT NOT NULL
     );
   `);
+  console.log('✅ categories OK');
 
-  // Create indexes for performance
+  // Indexes
   await db.execAsync(`
     CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
     CREATE INDEX IF NOT EXISTS idx_routine_completions_date ON routine_completions(date);
     CREATE INDEX IF NOT EXISTS idx_routine_completions_routine ON routine_completions(routine_id);
   `);
+  console.log('✅ indexes OK');
 
-  // Store schema version
+  // Schema version
   await db.execAsync(`
     CREATE TABLE IF NOT EXISTS schema_version (version INTEGER);
     INSERT OR REPLACE INTO schema_version (rowid, version) VALUES (1, ${SCHEMA_VERSION});
   `);
+  console.log('✅ schema version OK');
 };
 
 export const initializeDatabase = async (): Promise<void> => {
   try {
     await runMigrations();
-    console.log('Database initialized successfully');
+    console.log('🎉 Database initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize database:', error);
+    console.error('❌ Failed to initialize database:', error);
     throw error;
   }
 };

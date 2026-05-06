@@ -1,7 +1,7 @@
-import { create } from 'zustand';
 import { getDatabase } from '@/database/client';
-import { Task, CreateTaskInput, UpdateTaskInput } from '@/types';
-import { generateId, nowISO, formatDate } from '@/utils/helpers';
+import { CreateTaskInput, Task, UpdateTaskInput } from '@/types';
+import { formatDate, nowISO } from '@/utils/helpers';
+import { create } from 'zustand';
 
 interface TasksState {
   tasks: Task[];
@@ -18,7 +18,7 @@ interface TasksState {
 }
 
 export const useTasksStore = create<TasksState>((set, get) => ({
-  tasks: [],
+  tasks: [] as Task[],
   loading: false,
   error: null,
 
@@ -37,8 +37,22 @@ export const useTasksStore = create<TasksState>((set, get) => ({
 
       query += ' ORDER BY due_date ASC, due_time ASC';
 
-      const results = await db.getAllAsync<Task>(query, params);
-      set({ tasks: results as Task[], loading: false });
+      const results = await db.getAllAsync<any>(query, params);
+
+      const tasks = results.map((t) => ({
+        id: t.id,
+        title: t.title,
+        description: t.description,
+        dueDate: t.due_date,
+        dueTime: t.due_time,
+        duration: t.duration,
+        status: t.status,
+        priority: t.priority,
+        createdAt: t.created_at,
+        updatedAt: t.updated_at,
+      }));
+
+      set({ tasks, loading: false });
     } catch (error) {
       set({ error: (error as Error).message, loading: false });
     }
@@ -47,27 +61,58 @@ export const useTasksStore = create<TasksState>((set, get) => ({
   fetchTaskById: async (id: string) => {
     try {
       const db = await getDatabase();
-      const result = await db.getFirstAsync<Task>('SELECT * FROM tasks WHERE id = ?', [id]);
-      return result as Task | null;
+      const result = await db.getFirstAsync<any>(
+        'SELECT * FROM tasks WHERE id = ?',
+        [id]
+      );
+
+      if (!result) return null;
+
+      return {
+        id: result.id,
+        title: result.title,
+        description: result.description,
+        dueDate: result.due_date,
+        dueTime: result.due_time,
+        duration: result.duration,
+        status: result.status,
+        priority: result.priority,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at,
+      };
     } catch (error) {
       console.error('Failed to fetch task:', error);
       return null;
     }
   },
 
-  addTask: async (input: CreateTaskInput) => {
-    const task: Task = {
-      ...input,
-      id: generateId(),
-      createdAt: nowISO(),
-      updatedAt: nowISO(),
+  addTask: async (data) => {
+    const now = new Date().toISOString();
+
+    const task = {
+      ...data,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now,
     };
 
     try {
       const db = await getDatabase();
+
       await db.runAsync(
-        `INSERT INTO tasks (id, title, description, due_date, due_time, duration, status, priority, category_id, tags, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO tasks (
+        id,
+        title,
+        description,
+        due_date,
+        due_time,
+        duration,
+        status,
+        priority,
+        created_at,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           task.id,
           task.title,
@@ -77,14 +122,16 @@ export const useTasksStore = create<TasksState>((set, get) => ({
           task.duration ?? null,
           task.status,
           task.priority,
-          task.categoryId ?? null,
-          task.tags ? JSON.stringify(task.tags) : null,
           task.createdAt,
           task.updatedAt,
         ]
       );
 
-      set((state) => ({ tasks: [...state.tasks, task] }));
+      // actualizar estado (UI)
+      set((state) => ({
+        tasks: [task, ...state.tasks],
+      }));
+
       return task;
     } catch (error) {
       set({ error: (error as Error).message });

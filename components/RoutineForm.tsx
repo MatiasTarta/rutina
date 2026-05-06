@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 
-import { Colors, getContrastColor } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useRoutinesStore } from '@/stores/routinesStore';
 import { Routine } from '@/types';
@@ -169,8 +169,8 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
               const textColor = isSelected && colorScheme === 'dark'
                 ? colors.buttonTextDark
                 : isSelected
-                ? colors.buttonText
-                : colors.text;
+                  ? colors.buttonText
+                  : colors.text;
               return (
                 <Pressable
                   key={f}
@@ -205,8 +205,8 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
                 const textColor = isSelected && colorScheme === 'dark'
                   ? colors.buttonTextDark
                   : isSelected
-                  ? colors.buttonText
-                  : colors.text;
+                    ? colors.buttonText
+                    : colors.text;
                 return (
                   <Pressable
                     key={day}
@@ -269,7 +269,24 @@ export function RoutineForm({ routineId, isEdit }: RoutineFormProps) {
     </ScrollView>
   );
 }
+export function isRoutineScheduledForDate(routine: { isActive: any; startDate: string | number | Date; frequency: string; daysOfWeek: number[]; }, date: Date) {
+  const dayOfWeek = date.getDay();
 
+  if (!routine.isActive) return false;
+
+  // opcional: respetar startDate
+  if (new Date(date) < new Date(routine.startDate)) return false;
+
+  if (routine.frequency === 'daily') {
+    return true;
+  }
+
+  if (routine.frequency === 'weekly') {
+    return routine.daysOfWeek?.includes(dayOfWeek);
+  }
+
+  return false;
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,

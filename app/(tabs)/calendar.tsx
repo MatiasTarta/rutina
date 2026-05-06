@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, Pressable, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThemedText } from '@/components/themed-text';
 import { SwipeableView } from '@/components/SwipeableView';
-import { useTasksStore } from '@/stores/tasksStore';
-import { useRoutinesStore } from '@/stores/routinesStore';
+import { ThemedText } from '@/components/themed-text';
 import { Colors, getContrastColor } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { formatDate, isToday } from '@/utils/helpers';
 import { useResponsive } from '@/hooks/useResponsive';
+import { useRoutinesStore } from '@/stores/routinesStore';
+import { useTasksStore } from '@/stores/tasksStore';
+import { formatDate, isToday } from '@/utils/helpers';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -192,9 +192,9 @@ export default function CalendarScreen() {
                     style={[
                       styles.priorityBadge,
                       isTablet && styles.priorityBadgeWide,
-                      { backgroundColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`] },
+                      { backgroundColor: colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}` as keyof typeof colors] },
                     ]}>
-                    <Text style={[styles.priorityText, { color: getContrastColor(colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}`]) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
+                    <Text style={[styles.priorityText, { color: getContrastColor(colors[`priority${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}` as keyof typeof colors]) === 'dark' ? colors.buttonTextDark : colors.buttonText }]}>
                       {task.priority}
                     </Text>
                   </View>

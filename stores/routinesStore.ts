@@ -38,10 +38,10 @@ export const useRoutinesStore = create<RoutinesState>((set, get) => ({
 
       const results = await db.getAllAsync<Routine>(query);
 
-      const routines = (results as Routine[]).map((r) => ({
+      const routines = results.map((r: any) => ({
         ...r,
-        daysOfWeek: r.daysOfWeek ? JSON.parse(r.daysOfWeek as unknown as string) : undefined,
-      })) as Routine[];
+        daysOfWeek: r.days_of_week ? JSON.parse(r.days_of_week) : undefined,
+      }));
 
       set({ routines, loading: false });
     } catch (error) {
@@ -80,46 +80,46 @@ export const useRoutinesStore = create<RoutinesState>((set, get) => ({
     }
   },
 
-addRoutine: async (data) => {
-  const now = nowISO();
-  const routine: Routine = {
-    ...data,
-    id: crypto.randomUUID(),
-    isActive: data.isActive ?? true,
-    createdAt: now,
-    updatedAt: now,
-  };
+  addRoutine: async (data) => {
+    const now = nowISO();
+    const routine: Routine = {
+      ...data,
+      id: crypto.randomUUID(),
+      isActive: data.isActive ?? true,
+      createdAt: now,
+      updatedAt: now,
+    };
 
-  try {
-    const db = await getDatabase();
-    await db.runAsync(
-      `INSERT INTO routines (id, name, description, icon, color, frequency, days_of_week, preferred_time, duration, is_active, start_date, end_date, created_at, updated_at)
+    try {
+      const db = await getDatabase();
+      await db.runAsync(
+        `INSERT INTO routines (id, name, description, icon, color, frequency, days_of_week, preferred_time, duration, is_active, start_date, end_date, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        routine.id,
-        routine.name,
-        routine.description ?? null,
-        routine.icon ?? null,
-        routine.color ?? null,
-        routine.frequency,
-        routine.daysOfWeek ? JSON.stringify(routine.daysOfWeek) : null,
-        routine.preferredTime ?? null,
-        routine.duration ?? null,
-        routine.isActive ? 1 : 0,
-        routine.startDate,
-        routine.endDate ?? null,
-        routine.createdAt,
-        routine.updatedAt,
-      ]
-    );
+        [
+          routine.id,
+          routine.name,
+          routine.description ?? null,
+          routine.icon ?? null,
+          routine.color ?? null,
+          routine.frequency,
+          routine.daysOfWeek ? JSON.stringify(routine.daysOfWeek) : null,
+          routine.preferredTime ?? null,
+          routine.duration ?? null,
+          routine.isActive ? 1 : 0,
+          routine.startDate,
+          routine.endDate ?? null,
+          routine.createdAt,
+          routine.updatedAt,
+        ]
+      );
 
-    set((state) => ({ routines: [routine, ...state.routines] }));
-    return routine;
-  } catch (error) {
-    set({ error: (error as Error).message });
-    throw error;
-  }
-},
+      set((state) => ({ routines: [routine, ...state.routines] }));
+      return routine;
+    } catch (error) {
+      set({ error: (error as Error).message });
+      throw error;
+    }
+  },
 
   updateRoutine: async (id: string, input: UpdateRoutineInput) => {
     const updatedAt = nowISO();

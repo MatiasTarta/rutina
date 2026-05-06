@@ -19,6 +19,8 @@ const priorityToColorKey: Record<TaskPriority, keyof typeof Colors.light> = {
   high: 'error',
 };
 
+
+
 export default function WeekScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
@@ -30,10 +32,8 @@ export default function WeekScreen() {
   const [currentWeekStart, setCurrentWeekStart] = useState(() => getStartOfWeek(new Date()));
 
   useEffect(() => {
-    const weekEnd = addDays(currentWeekStart, 6);
-    fetchTasks(currentWeekStart, weekEnd);
     fetchRoutines(true);
-  }, [currentWeekStart, fetchTasks, fetchRoutines]);
+  }, []);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
 
@@ -55,12 +55,21 @@ export default function WeekScreen() {
   };
 
   const getRoutinesForDay = (date: Date) => {
+    const dateStr = formatDate(date);
+
     return routines.filter((routine) => {
       if (!routine.isActive) return false;
+
+      if (routine.startDate && dateStr < routine.startDate) return false;
+
+      if (routine.endDate && dateStr > routine.endDate) return false;
+
       if (routine.frequency === 'daily') return true;
+
       if (routine.frequency === 'weekly' && routine.daysOfWeek) {
         return routine.daysOfWeek.includes(date.getDay());
       }
+
       return false;
     });
   };
